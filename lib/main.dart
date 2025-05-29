@@ -1,4 +1,4 @@
-// 통합된 단일 코드 - main.dart 하나로 모든 기능 포함
+// 통합된 단일 코드 - main.dart (CBNU Planner UI 개선)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -18,7 +18,10 @@ class CBNUPlannerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CBNU Planner',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        useMaterial3: true,
+      ),
       home: const ScheduleInputPage(),
       debugShowCheckedModeBanner: false,
     );
@@ -245,48 +248,100 @@ class _ScheduleInputPageState extends State<ScheduleInputPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('일정 입력')),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text('CBNU Planner'),
+        centerTitle: true,
+        leading: const Icon(Icons.calendar_today),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: '일정 제목'),
-            ),
-            DropdownButton<String>(
-              hint: const Text('건물 선택'),
-              value: _selectedBuilding,
-              items: buildingList.map((b) => DropdownMenuItem(value: b.name, child: Text(b.name))).toList(),
-              onChanged: (value) => setState(() => _selectedBuilding = value),
-            ),
-            Row(
-              children: [
-                ElevatedButton(onPressed: _pickTime, child: const Text('시간 선택')),
-                const SizedBox(width: 16),
-                Text(_selectedTime != null ? _selectedTime!.format(context) : '시간 미선택'),
-              ],
-            ),
-            ElevatedButton(onPressed: _submitSchedule, child: const Text('일정 추가')),
-            ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MapRoutePage(schedules: _schedules, buildingList: buildingList),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        labelText: '일정 제목',
+                        prefixIcon: Icon(Icons.title),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedBuilding,
+                      items: buildingList.map((b) => DropdownMenuItem(value: b.name, child: Text(b.name))).toList(),
+                      onChanged: (value) => setState(() => _selectedBuilding = value),
+                      decoration: InputDecoration(
+                        labelText: '건물 선택',
+                        prefixIcon: Icon(Icons.location_city),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _pickTime,
+                          icon: Icon(Icons.access_time),
+                          label: Text('시간 선택'),
+                        ),
+                        SizedBox(width: 16),
+                        Text(_selectedTime != null ? _selectedTime!.format(context) : '시간 미선택'),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _submitSchedule,
+                          icon: Icon(Icons.add),
+                          label: Text('일정 추가'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _clearSchedules,
+                          icon: Icon(Icons.delete),
+                          label: Text('초기화'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MapRoutePage(schedules: _schedules, buildingList: buildingList),
+                            ),
+                          ),
+                          icon: Icon(Icons.map),
+                          label: Text('경로 보기'),
+                        ),
+                      ],
+                    )
+                  ],
                 ),
               ),
-              child: const Text('경로 보기'),
             ),
-            ElevatedButton(onPressed: _clearSchedules, child: const Text('초기화')),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _schedules.length,
-                itemBuilder: (context, index) {
-                  final s = _schedules[index];
-                  return ListTile(title: Text('${s.title} (${s.place}) - ${s.time.format(context)}'));
-                },
-              ),
+            SizedBox(height: 16),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: _schedules.length,
+              itemBuilder: (context, index) {
+                final s = _schedules[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    leading: Icon(Icons.event),
+                    title: Text(s.title),
+                    subtitle: Text('${s.place} - ${s.time.format(context)}'),
+                  ),
+                );
+              },
             )
           ],
         ),
@@ -350,14 +405,12 @@ class _MapRoutePageState extends State<MapRoutePage> {
               ],
             ),
           MarkerLayer(
-            markers: points
-                .map((p) => Marker(
-                      point: p,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(Icons.location_on, color: Colors.red),
-                    ))
-                .toList(),
+            markers: points.map((p) => Marker(
+              point: p,
+              width: 40,
+              height: 40,
+              child: Icon(Icons.location_on, color: Colors.red),
+            )).toList(),
           ),
         ],
       ),
