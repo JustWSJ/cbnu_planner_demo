@@ -1,6 +1,6 @@
 {
-    "name": "a",
-    "short_name": "a",
+    "name": "cbnu_planner",
+    "short_name": "cbnu_planner",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
